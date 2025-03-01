@@ -1,43 +1,75 @@
-# Yume.rent Telegram Mini App
+# Yume Camera Rental - Telegram Mini App
 
-Телеграм мини-приложение для сервиса аренды фото и видеооборудования Yume.rent.
+A Telegram Mini App for renting camera equipment, featuring a catalog of cameras scraped from yume.rent.
 
-## Описание
+## Features
 
-Это HTML5 приложение для Telegram, которое позволяет пользователям:
-- Просматривать доступное оборудование
-- Бронировать камеры на выбранные даты
-- Выбирать дополнительные аксессуары
-- Отправлять запросы на бронирование
+- Camera catalog with images and details
+- Rental booking system
+- Integration with Telegram Mini App platform
+- Mobile-friendly responsive design
 
-## Установка и запуск
+## Prerequisites
 
-1. Разместите файлы на вашем веб-сервере
-2. Создайте бота в Telegram через @BotFather
-3. Настройте Telegram WebApp URL для вашего бота
-4. Добавьте в Telegram меню кнопку для запуска мини-приложения
+- Node.js (v14 or higher)
+- npm (v6 or higher)
 
-## Структура файлов
+## Installation
 
-- `index.html` - Основная HTML структура приложения
-- `style.css` - Стили для приложения
-- `app.js` - Логика работы приложения и взаимодействие с Telegram API
+1. Clone this repository
+2. Install dependencies:
 
-## Интеграция с бэкендом
+```bash
+npm install
+```
 
-В текущей версии приложение не имеет реального бэкенда. Для полноценной работы необходимо реализовать API для:
-1. Получения актуального списка оборудования
-2. Проверки доступности на выбранные даты
-3. Создания заявки на бронирование
+## Running the app
 
-## Telegram Bot API
+Start the development server:
 
-Приложение использует [Telegram Bot API](https://core.telegram.org/bots/api) и 
-[Telegram WebApp](https://core.telegram.org/bots/webapps) для интеграции в экосистему Telegram.
+```bash
+npm run dev
+```
 
-## Примечания по безопасности
+Or run in production mode:
 
-При интеграции с реальным бэкендом рекомендуется:
-1. Проверять подпись initData для защиты от подделки запросов
-2. Использовать HTTPS для защиты данных пользователей
-3. Внедрить механизм защиты от множественных запросов 
+```bash
+npm start
+```
+
+The app will be available at http://localhost:3001
+
+## Setting up with Telegram Bot
+
+To use this as a Telegram Mini App:
+
+1. Create a bot using [@BotFather](https://t.me/BotFather)
+2. Use the /newapp command to set up a mini app for your bot
+3. Enter the URL where you've deployed this application
+4. Configure the bot to handle the data received from the mini app
+
+## Project Structure
+
+- `server.js`: Express server for serving the app
+- `index.html`: Main HTML structure
+- `app.js`: Client-side JavaScript for the app
+- `style.css`: Styling for the application
+- `camera-data.json`: Camera data scraped from yume.rent
+- `images/`: Directory containing camera images
+
+## Customizing
+
+You can modify the following files to customize the app:
+
+- `style.css`: Change colors, layout, and visual appearance
+- `app.js`: Modify functionality and behavior
+- `index.html`: Update content and structure
+- `server.js`: Add or modify API endpoints
+
+## Camera Data
+
+The camera data was scraped from yume.rent using a Python script. The images are stored in the `images/` directory, and the metadata is stored in `camera-data.json`.
+
+## License
+
+MIT 

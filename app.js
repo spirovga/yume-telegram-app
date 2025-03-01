@@ -1,69 +1,83 @@
 // Initialize Telegram WebApp
-let tg = window.Telegram.WebApp;
-tg.expand();
+let tg = window.Telegram?.WebApp;
+const initData = tg?.initData || '';
+const initDataUnsafe = tg?.initDataUnsafe || {};
 
-// Camera data
-const cameras = [
-    {
-        id: 1,
-        name: 'Sony Alpha A7 III',
-        specs: 'Полнокадровая беззеркальная камера, 24.2 МП',
-        description: 'Профессиональная полнокадровая камера с отличным качеством изображения и видео 4K.',
-        price: 3500,
-        priceUnit: '₽/день',
-        image: 'images/sony-a7iii.jpg'
-    },
-    {
-        id: 2,
-        name: 'Canon EOS R5',
-        specs: 'Полнокадровая беззеркальная камера, 45 МП',
-        description: 'Высокопроизводительная камера для профессиональной фото и видеосъемки до 8K.',
-        price: 4500,
-        priceUnit: '₽/день',
-        image: 'images/canon-eos-r5.jpg'
-    },
-    {
-        id: 3,
-        name: 'Nikon Z6 II',
-        specs: 'Полнокадровая беззеркальная камера, 24.5 МП',
-        description: 'Универсальная беззеркальная камера для фотографов и видеографов.',
-        price: 3200,
-        priceUnit: '₽/день',
-        image: 'images/nikon-z6ii.jpg'
-    },
-    {
-        id: 4,
-        name: 'Blackmagic Pocket Cinema Camera 6K',
-        specs: 'Кинокамера Super 35, 6K разрешение',
-        description: 'Профессиональная видеокамера с потрясающим динамическим диапазоном и возможностью записи в RAW.',
-        price: 5000,
-        priceUnit: '₽/день',
-        image: 'images/blackmagic-pocket-6k.jpg'
-    },
-    {
-        id: 5,
-        name: 'Fujifilm X-T4',
-        specs: 'APS-C беззеркальная камера, 26.1 МП',
-        description: 'Камера, сочетающая стильный дизайн и высокую производительность для фото и видео.',
-        price: 2800,
-        priceUnit: '₽/день',
-        image: 'images/fujifilm-xt4.jpg'
-    }
-];
+// Enable closing confirmation for Telegram WebApp
+if (tg) {
+    tg.enableClosingConfirmation();
+    tg.expand();
+    
+    // Apply theme colors if available
+    document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#ffffff');
+    document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#000000');
+    document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color || '#999999');
+    document.documentElement.style.setProperty('--tg-theme-link-color', tg.themeParams.link_color || '#2481cc');
+    document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color || '#3390ec');
+    document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color || '#ffffff');
+}
 
-// DOM Elements
+// DOM elements
 const cameraListEl = document.getElementById('camera-list');
 const bookingFormEl = document.getElementById('booking-form');
 const selectedCameraEl = document.getElementById('selected-camera');
-const bookingForm = document.getElementById('booking');
-const backToListBtn = document.getElementById('back-to-list');
+const cameraSelectEl = document.getElementById('camera-select');
+const submitBtn = document.getElementById('submit-booking');
+const backBtn = document.getElementById('back-to-list');
 const successModal = document.getElementById('success-modal');
 const closeModalBtn = document.getElementById('close-modal');
+const accessoriesSelectEl = document.getElementById('accessories-select');
 
-// Selected camera
+// State variables
+let cameras = [];
 let selectedCamera = null;
 
-// Render camera list
+// Fixed accessories list
+const accessories = [
+    { id: 1, name: "Tripod", price: 500 },
+    { id: 2, name: "Extra Battery", price: 300 },
+    { id: 3, name: "Camera Bag", price: 700 },
+    { id: 4, name: "SD Card (64GB)", price: 400 },
+    { id: 5, name: "Flash", price: 600 },
+    { id: 6, name: "Lens Filter Set", price: 800 }
+];
+
+// Fetch camera data from our JSON file
+async function fetchCameraData() {
+    try {
+        const response = await fetch('camera-data.json');
+        if (!response.ok) {
+            throw new Error('Failed to fetch camera data');
+        }
+        
+        const data = await response.json();
+        
+        // Process camera data to add more details
+        cameras = data.map((camera, index) => {
+            // Generate price and specs based on camera name to make up for missing metadata
+            const priceBase = 1000 + (index % 7) * 500;
+            const typeKeywords = ['DSLR', 'Mirrorless', 'Medium Format', 'Compact', 'Film', 'Action'];
+            const typeIndex = index % typeKeywords.length;
+            
+            return {
+                id: index + 1,
+                name: camera.name,
+                specs: `${typeKeywords[typeIndex]} Camera`,
+                description: `Professional ${typeKeywords[typeIndex]} camera for photography enthusiasts.`,
+                price: priceBase,
+                image: `images/${camera.image}`
+            };
+        });
+        
+        renderCameraList();
+        populateCameraSelect();
+    } catch (error) {
+        console.error('Error loading camera data:', error);
+        cameraListEl.innerHTML = `<p class="error">Failed to load cameras: ${error.message}</p>`;
+    }
+}
+
+// Render the camera list
 function renderCameraList() {
     cameraListEl.innerHTML = '';
     
@@ -74,10 +88,11 @@ function renderCameraList() {
         
         cameraCard.innerHTML = `
             <img src="${camera.image}" alt="${camera.name}" class="camera-image">
-            <div class="camera-name">${camera.name}</div>
-            <div class="camera-specs">${camera.specs}</div>
-            <div class="camera-description">${camera.description}</div>
-            <div class="camera-price">${camera.price} ${camera.priceUnit}</div>
+            <div class="camera-info">
+                <div class="camera-name">${camera.name}</div>
+                <div class="camera-specs">${camera.specs}</div>
+                <div class="camera-price">₽${camera.price}/day</div>
+            </div>
         `;
         
         cameraCard.addEventListener('click', () => selectCamera(camera));
@@ -85,163 +100,131 @@ function renderCameraList() {
     });
 }
 
+// Populate the camera select dropdown
+function populateCameraSelect() {
+    cameraSelectEl.innerHTML = '<option value="">Select a camera</option>';
+    
+    cameras.forEach(camera => {
+        const option = document.createElement('option');
+        option.value = camera.id;
+        option.textContent = `${camera.name} - ₽${camera.price}/day`;
+        cameraSelectEl.appendChild(option);
+    });
+}
+
+// Populate the accessories select dropdown
+function populateAccessoriesSelect() {
+    accessoriesSelectEl.innerHTML = '';
+    
+    accessories.forEach(accessory => {
+        const option = document.createElement('option');
+        option.value = accessory.id;
+        option.textContent = `${accessory.name} - ₽${accessory.price}/day`;
+        accessoriesSelectEl.appendChild(option);
+    });
+}
+
 // Select a camera
 function selectCamera(camera) {
     selectedCamera = camera;
-    selectedCameraEl.innerHTML = `
-        <div class="camera-name">${camera.name}</div>
-        <div class="camera-specs">${camera.specs}</div>
-        <div class="camera-price">${camera.price} ${camera.priceUnit}</div>
-    `;
     
-    cameraListEl.style.display = 'none';
+    // Show the booking form and hide the camera list
+    cameraListEl.parentElement.style.display = 'none';
     bookingFormEl.style.display = 'block';
     
-    // Set minimum date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('start-date').min = today;
-    document.getElementById('end-date').min = today;
+    // Display selected camera info
+    selectedCameraEl.innerHTML = `
+        <img src="${camera.image}" alt="${camera.name}" class="camera-image" style="max-height: 150px; object-fit: contain;">
+        <div>
+            <h3>${camera.name}</h3>
+            <p>${camera.specs}</p>
+            <p>${camera.description}</p>
+            <p class="camera-price">₽${camera.price}/day</p>
+        </div>
+    `;
     
-    // Handle back button in Telegram
-    tg.BackButton.show();
-    tg.BackButton.onClick(() => backToList());
+    // Set the selected camera in the dropdown
+    cameraSelectEl.value = camera.id;
+    
+    // Scroll to top of form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Go back to list
+// Return to the camera list
 function backToList() {
-    cameraListEl.style.display = 'block';
     bookingFormEl.style.display = 'none';
+    cameraListEl.parentElement.style.display = 'block';
     selectedCamera = null;
-    tg.BackButton.hide();
 }
 
 // Submit booking
-function submitBooking(e) {
-    e.preventDefault();
+function submitBooking(event) {
+    event.preventDefault();
     
-    const startDate = document.getElementById('start-date').value;
-    const endDate = document.getElementById('end-date').value;
-    const name = document.getElementById('name').value;
-    const phone = document.getElementById('phone').value;
-    const comment = document.getElementById('comment').value;
-    
-    // Get selected accessories
-    const accessoriesSelect = document.getElementById('accessories');
-    const selectedAccessories = Array.from(accessoriesSelect.selectedOptions).map(option => option.text);
-    
-    // Create booking data
+    // Get form data
+    const formData = new FormData(bookingFormEl.querySelector('form'));
     const bookingData = {
-        camera: selectedCamera.name,
-        cameraId: selectedCamera.id,
-        startDate,
-        endDate,
-        accessories: selectedAccessories,
-        name,
-        phone,
-        comment,
-        telegramUser: tg.initDataUnsafe.user ? {
-            id: tg.initDataUnsafe.user.id,
-            firstName: tg.initDataUnsafe.user.first_name,
-            lastName: tg.initDataUnsafe.user.last_name,
-            username: tg.initDataUnsafe.user.username
-        } : null
+        camera: cameras.find(c => c.id == formData.get('camera')),
+        startDate: formData.get('start-date'),
+        endDate: formData.get('end-date'),
+        accessories: Array.from(accessoriesSelectEl.selectedOptions).map(option => 
+            accessories.find(a => a.id == option.value)
+        ),
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        email: formData.get('email'),
+        notes: formData.get('notes')
     };
     
-    // Send data to backend (here we'll just simulate it)
-    console.log('Booking data:', bookingData);
+    // Calculate total price
+    const startDate = new Date(bookingData.startDate);
+    const endDate = new Date(bookingData.endDate);
+    const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) || 1;
     
-    // Show success modal
-    showSuccessModal();
+    const cameraPrice = bookingData.camera ? bookingData.camera.price * days : 0;
+    const accessoriesPrice = bookingData.accessories.reduce((sum, acc) => sum + acc.price * days, 0);
+    const totalPrice = cameraPrice + accessoriesPrice;
+    
+    // Show success message
+    document.getElementById('booking-details').innerHTML = `
+        <p><strong>Equipment:</strong> ${bookingData.camera ? bookingData.camera.name : 'No camera selected'}</p>
+        <p><strong>Rental Period:</strong> ${bookingData.startDate} to ${bookingData.endDate} (${days} day${days !== 1 ? 's' : ''})</p>
+        <p><strong>Accessories:</strong> ${bookingData.accessories.length > 0 ? bookingData.accessories.map(a => a.name).join(', ') : 'None'}</p>
+        <p><strong>Total Price:</strong> ₽${totalPrice}</p>
+    `;
+    
+    // Show modal
+    successModal.style.display = 'flex';
     
     // Send data to Telegram
-    if (tg.initDataUnsafe.user) {
+    if (tg && tg.MainButton) {
+        tg.MainButton.setText('Booking Completed!');
+        tg.MainButton.show();
+        
+        // Send data to the bot
         tg.sendData(JSON.stringify(bookingData));
     }
-    
-    // Clear form
-    bookingForm.reset();
 }
 
-// Show success modal
-function showSuccessModal() {
-    successModal.style.display = 'flex';
-}
-
-// Close success modal
+// Close the modal
 function closeModal() {
     successModal.style.display = 'none';
     backToList();
-}
-
-// Phone number formatting
-function setupPhoneInput() {
-    const phoneInput = document.getElementById('phone');
     
-    phoneInput.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/\D/g, '');
-        
-        if (value.length > 0 && value[0] !== '7') {
-            value = '7' + value;
-        }
-        
-        let formattedValue = '';
-        
-        if (value.length > 0) {
-            formattedValue = '+' + value[0];
-        }
-        
-        if (value.length > 1) {
-            formattedValue += ' (' + value.substring(1, 4);
-        }
-        
-        if (value.length > 4) {
-            formattedValue += ') ' + value.substring(4, 7);
-        }
-        
-        if (value.length > 7) {
-            formattedValue += '-' + value.substring(7, 9);
-        }
-        
-        if (value.length > 9) {
-            formattedValue += '-' + value.substring(9, 11);
-        }
-        
-        e.target.value = formattedValue;
-    });
+    // Reset form
+    bookingFormEl.querySelector('form').reset();
 }
 
 // Event listeners
+if (backBtn) backBtn.addEventListener('click', backToList);
+if (submitBtn) submitBtn.addEventListener('click', submitBooking);
+if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    renderCameraList();
-    setupPhoneInput();
+    fetchCameraData();
+    populateAccessoriesSelect();
     
-    bookingForm.addEventListener('submit', submitBooking);
-    backToListBtn.addEventListener('click', backToList);
-    closeModalBtn.addEventListener('click', closeModal);
-    
-    // Set up date input logic
-    const startDateInput = document.getElementById('start-date');
-    const endDateInput = document.getElementById('end-date');
-    
-    startDateInput.addEventListener('change', () => {
-        endDateInput.min = startDateInput.value;
-        if (endDateInput.value && new Date(endDateInput.value) < new Date(startDateInput.value)) {
-            endDateInput.value = startDateInput.value;
-        }
-    });
-    
-    // Initialize Telegram WebApp UI
-    tg.ready();
-    
-    // Setup main button
-    tg.MainButton.setParams({
-        text: 'Открыть приложение',
-        color: tg.themeParams.button_color || '#3390ec'
-    });
-    
-    tg.MainButton.onClick(() => {
-        tg.MainButton.hide();
-    });
-    
-    tg.MainButton.show();
+    // Initially hide the booking form
+    if (bookingFormEl) bookingFormEl.style.display = 'none';
 }); 

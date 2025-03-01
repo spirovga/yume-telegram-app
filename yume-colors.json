@@ -1,0 +1,9 @@
+{
+  "bg-body": "rgb(255, 255, 255)",
+  "text-body": "rgb(33, 37, 41)",
+  "text-button": "rgb(21, 19, 36)",
+  "bg-button": "rgb(237, 238, 240)",
+  "text-h1": "rgba(0, 0, 0, 0.88)",
+  "bg-footer": "rgb(255, 255, 255)",
+  "text-footer": "rgba(0, 0, 0, 0.88)"
+}

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Yume.rent - Аренда фототехники</title>
+    <title>Yume Camera Rental</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -11,81 +11,82 @@
     <div class="container">
         <header>
             <div class="logo">
-                <h1>Yume.rent</h1>
-                <p>Аренда фотооборудования</p>
+                <h1>Yume Camera Rental</h1>
+                <p>Professional Photography Equipment</p>
             </div>
         </header>
 
         <main>
             <section class="intro">
-                <h2>Профессиональное фото и видеооборудование</h2>
-                <p>Забронируйте камеру или аксессуары для вашей съемки</p>
+                <h2>Professional Photo & Video Equipment</h2>
+                <p>Book a camera or accessories for your next shoot</p>
             </section>
 
             <section class="camera-list" id="camera-list">
                 <!-- Camera list will be loaded here -->
+                <div class="camera-grid" id="camera-grid"></div>
             </section>
 
             <section class="booking-form" id="booking-form" style="display: none;">
-                <h2>Бронирование</h2>
+                <h2>Book Equipment</h2>
                 <form id="booking">
                     <div class="form-group">
-                        <label for="camera">Оборудование</label>
+                        <label for="camera">Selected Equipment</label>
                         <div id="selected-camera" class="selected-item"></div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="start-date">Дата начала</label>
+                        <label for="start-date">Start Date</label>
                         <input type="date" id="start-date" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="end-date">Дата окончания</label>
+                        <label for="end-date">End Date</label>
                         <input type="date" id="end-date" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="accessories">Дополнительное оборудование</label>
+                        <label for="accessories">Additional Equipment</label>
                         <select id="accessories" multiple>
-                            <option value="tripod">Штатив</option>
-                            <option value="lens">Дополнительный объектив</option>
-                            <option value="flash">Вспышка</option>
-                            <option value="memory">Карта памяти</option>
-                            <option value="battery">Дополнительный аккумулятор</option>
+                            <option value="tripod">Tripod</option>
+                            <option value="lens">Additional Lens</option>
+                            <option value="flash">Flash</option>
+                            <option value="memory">Memory Card</option>
+                            <option value="battery">Extra Battery</option>
                         </select>
                     </div>
                     
                     <div class="form-group">
-                        <label for="name">ФИО</label>
+                        <label for="name">Full Name</label>
                         <input type="text" id="name" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="phone">Телефон</label>
+                        <label for="phone">Phone</label>
                         <input type="tel" id="phone" placeholder="+7 (___) ___-__-__" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="comment">Комментарий</label>
+                        <label for="comment">Comments</label>
                         <textarea id="comment" rows="3"></textarea>
                     </div>
                     
-                    <button type="submit" class="main-button" id="submit-booking">Забронировать</button>
-                    <button type="button" class="back-button" id="back-to-list">Назад к списку</button>
+                    <button type="submit" class="main-button" id="submit-booking">Book Now</button>
+                    <button type="button" class="back-button" id="back-to-list">Back to List</button>
                 </form>
             </section>
         </main>
 
         <footer>
-            <p>© 2023 Yume.rent - Все права защищены</p>
+            <p>© 2023 Yume Camera Rental - All Rights Reserved</p>
         </footer>
     </div>
 
     <div class="modal" id="success-modal">
         <div class="modal-content">
-            <h3>Бронирование успешно!</h3>
-            <p>Ваша заявка принята. Мы свяжемся с вами в ближайшее время для подтверждения.</p>
-            <button class="main-button" id="close-modal">Закрыть</button>
+            <h3>Booking Successful!</h3>
+            <p>Your booking request has been received. We'll contact you shortly to confirm.</p>
+            <button class="main-button" id="close-modal">Close</button>
         </div>
     </div>
 
